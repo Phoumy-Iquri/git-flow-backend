@@ -1,0 +1,12 @@
+version: '3.4'
+
+services:
+  nestjsprismabackendtemplatenestjsprismabackendtemplate:
+    image: nestjsprismabackendtemplatenestjsprismabackendtemplate
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    environment:
+      NODE_ENV: production
+    ports:
+      - 8000:8000
