@@ -24,7 +24,6 @@ const roundedCorners = Buffer.from(
  */
 export const CreateUploadFile = async (file: any, folderName?: string) => {
   const { originalname, mimetype, path } = file;
-  console.log(file);
   const encodedFileName = Buffer.from(originalname, 'binary').toString('utf-8');
 
   const write = createWriteStream(`./images/${encodedFileName}`);

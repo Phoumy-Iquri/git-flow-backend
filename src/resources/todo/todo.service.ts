@@ -49,7 +49,6 @@ export class TodoService {
   }
 
   async Delete(id: string): Promise<any> {
-    // try {
     const response = await this.prisma.todo.findFirst({
       where: {
         id,
@@ -60,8 +59,5 @@ export class TodoService {
     } else {
       throw new HttpException({ message: 'Remove Success' }, HttpStatus.GONE);
     }
-    // } catch (err) {
-    //   throw new HttpException({ message: 'Remove Success' }, HttpStatus.GONE);
-    // }
   }
 }

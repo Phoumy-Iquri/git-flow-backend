@@ -65,7 +65,7 @@ export class TodoController {
   async UploadFile(
     @UploadedFile(
       new ParseFilePipe({
-        validators: [new MaxFileSizeValidator({ maxSize: 1000 })],
+        validators: [new MaxFileSizeValidator({ maxSize: 100000 })],
       }),
     )
     file: Express.Multer.File,
