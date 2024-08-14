@@ -10,10 +10,10 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
+model Todo {
   id        String   @id @default(auto()) @map("_id") @db.ObjectId
-  email     String
-  password      String
+  message   String
+  markDone  Boolean  @default(false)
   // posts     Post[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

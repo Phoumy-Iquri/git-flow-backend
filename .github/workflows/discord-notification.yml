@@ -1,0 +1,128 @@
+name: Notify Discord on Various Events
+
+on:
+  workflow_run:
+    workflows: [Build dokcer images]
+    types:
+      - completed
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Run some test steps
+        run: |
+          echo "Running tests... ${{ github.event.workflow_run.conclusion }}, ${{ github.event_name }}"
+          # Your test commands go here
+
+  notify-discord:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Send notification to Discord on Push
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{
+                "embeds": [{
+                    "title": "New Push Event",
+                    "description": "A new commit has been pushed to the ${{ github.ref_name }} branch.",
+                    "url": "${{ github.event.compare }}",
+                    "color": 5814783,
+                    "fields": [
+                    {
+                        "name": "Repo",
+                        "value": "${{ github.repository }}"
+                    },
+                    {
+                        "name": "Commit Message",
+                        "value": "${{ github.event.workflow_run.head_commit.message }}"
+                    },
+                    {
+                        "name": "Author",
+                        "value": "${{ github.actor }}"
+                    }
+                    ],
+                    "timestamp": "${{ github.event.workflow_run.head_commit.timestamp }}"
+                }]
+                }' \
+            $DISCORD_WEBHOOK_URL
+
+      - name: Send notification to Discord on Deployment Status
+        if: github.event_name == 'deployment_status'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{
+                "embeds": [{
+                    "title": "Deployment",
+                    "description": "A new commit has been pushed to the ${{ github.ref_name }} branch.",
+                    "url": "${{ github.event.workflow_run.compare }}",
+                    "color": 5814783,
+                    "fields": [
+                    {
+                        "name": "Repo",
+                        "value": "${{ github.repository }}"
+                    },
+                    {
+                        "name": "Commit Message",
+                        "value": "${{ github.event.workflow_run.head_commit.message }}"
+                    },
+                    {
+                        "name": "Author",
+                        "value": "${{ github.actor }}"
+                    }
+                    {
+                        "name": "Deployment ${GITHUB_REF##*/} has ${{ github.event.workflow_run.deployment_status.state }}",
+                        "value": "${{ github.event.workflow_run.deployment_status.state }}"
+                    }
+                    ],
+                    "timestamp": "${{ github.event.workflow_run.head_commit.timestamp }}"
+                }]
+                }' \
+            $DISCORD_WEBHOOK_URL
+
+  handle-failure:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      - name: Send notification to Discord on Issue
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H "Content-Type: application/json" \
+            -d '{
+                "embeds": [{
+                    "title": ${{ github.event.workflow_run.issue.title }},
+                    "description": "A new commit has been pushed to the ${{ github.ref_name }} branch.",
+                    "url": "${{ github.event.workflow_run.compare }}",
+                    "color": 5814783,
+                    "fields": [
+                    {
+                        "name": "Repo",
+                        "value": "${{ github.repository }}"
+                    },
+                    {
+                        "name": "Issue",
+                        "value": "${{ github.event.workflow_run.issue.number }}"
+                    }
+                    {
+                        "name": "Commit Message",
+                        "value": "${{ github.event.workflow_run.head_commit.message }}"
+                    },
+                    {
+                        "name": "Author",
+                        "value": "${{ github.actor }}"
+                    }
+                    ],
+                    "timestamp": "${{ github.event.workflow_run.head_commit.timestamp }}"
+                }]
+                }' \
+            $DISCORD_WEBHOOK_URL
